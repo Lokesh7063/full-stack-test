@@ -1,47 +1,88 @@
-# Full Stack Test
-WPoets Full Stack Developer Test
+# WPoets Full Stack Developer Test
 
-Hi Full-stacker!
+## Setup
 
-Great that you're interested in this exercise! Thanks a lot for making it. The exercise consits of an assignment. It is related to the WPoets working ways. Good luck and we are looking forward to hearing from you soon!
+### Requirements
+- PHP 8.0+
+- MySQL 5.7+ / MariaDB 10.3+
+- A local web server (Apache/nginx) or `php -S localhost:8000`
 
-To complete these assignment you need to fork this repo. When you're done you can push your changes to your own repo (and let us know where to find it ofcourse).
+### 1. Database
 
-<h2>Task</h2>
-<ul>
-  <li>Create a CRUD functionality using PHP, MySQL.</li>
-	<li>Fetch the data to display the section that matches the given design using HTML5, CSS3, jQuery, Bootstrap.</li>
-</ul>
+```sql
+-- Import the schema and seed data
+mysql -u root -p < database.sql
+```
 
-<h2>Design</h2>
+Or run the SQL file contents through phpMyAdmin / TablePlus.
 
-<h5>In Web view</h5>
-<ul>
-  <li>Column 1 is tabs. Each tab is a seperate slider.</li>
-	<li>Clicking on the tab will change the slider in Column 2.</li>
-	<li>
-		Column 2 is a slider connected with column 3.
-		<ul>
-			<li>Which means when the slide in column 2 changes, the image in column 3 will change with it.</li>
-			<li>Controls are attached to column 2 only.</li>
-		</ul>
-	</li>
-	<li>Image in column 3 is a 1:1 image.</li>
-</ul>
+### 2. Configuration
 
-<h5>In Mobile view</h5>
-<ul>
-  <li>Column 1 changes to accordion.</li>
-  <li>Column 2 is a slider with images from column 3 as background images.</li>
-</ul>
+Edit `config.php` and set your database credentials:
 
-<strong>Note: Please refer to the files directory for design files, relevant icons/images and styleguide.</strong>
+```php
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'wpoets_db');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+```
 
-<h2>Technical questions</h2>
+### 3. Run
 
-Please answer the following questions in a markdown file called <code>Answers to technical questions.md</code>
-<ul>
-  <li>How long did you spend on the coding test? What would you add to your solution if you had more time? If you didn't spend much time on the coding test then use this as an opportunity to explain what you would add.</li>
-	<li>How would you track down a performance issue in production? Have you ever had to do this?</li>
-	<li>Please describe yourself using JSON.</li>
-</ul>
+```bash
+# From the project root
+php -S localhost:8000
+```
+
+Open **http://localhost:8000** for the portfolio view.  
+Open **http://localhost:8000/admin.php** for the CRUD admin panel.
+
+---
+
+## Project Structure
+
+```
+wpoets/
+├── index.php                         # Portfolio front page
+├── admin.php                         # CRUD admin panel
+├── config.php                        # DB connection config
+├── database.sql                      # Schema + seed data
+├── api/
+│   └── index.php                     # REST API (CRUD endpoints)
+├── css/
+│   ├── style.css                     # Main styles
+│   └── admin.css                     # Admin-specific styles
+├── js/
+│   ├── main.js                       # Tabs / sliders / image sync
+│   └── admin.js                      # Admin CRUD interactions
+└── Answers to technical questions.md
+```
+
+---
+
+## API Reference
+
+Base: `/api/index.php?resource=<resource>`
+
+| Method | URL | Description |
+|--------|-----|-------------|
+| GET | `?resource=categories` | List all categories |
+| GET | `?resource=categories&id=1` | Get one category |
+| POST | `?resource=categories` | Create category `{name, sort_order}` |
+| PUT | `?resource=categories&id=1` | Update category |
+| DELETE | `?resource=categories&id=1` | Delete category (cascades slides) |
+| GET | `?resource=slides` | List all slides |
+| GET | `?resource=slides&category_id=1` | Slides for one category |
+| GET | `?resource=slides&id=1` | Get one slide |
+| POST | `?resource=slides` | Create slide `{category_id, title, description, image_url, sort_order}` |
+| PUT | `?resource=slides&id=1` | Update slide |
+| DELETE | `?resource=slides&id=1` | Delete slide |
+
+---
+
+## Design Decisions
+
+- **3-column desktop layout** — tabs (col 1) drive an independent Swiper per category (col 2); slide changes sync a 1:1 feature image (col 3) via a crossfade transition.
+- **Mobile** — Bootstrap accordion replaces tabs; each panel contains a full-bleed background-image Swiper with overlaid text.
+- **PHP REST API** — thin PDO-based router, no framework dependency, easy to extend.
+- **No build step** — assets are plain CSS/JS loaded from CDN, ready to run on any shared host.
